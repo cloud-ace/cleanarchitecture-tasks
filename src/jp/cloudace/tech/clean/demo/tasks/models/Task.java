@@ -1,35 +1,41 @@
 package jp.cloudace.tech.clean.demo.tasks.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jp.cloudace.tech.clean.demo.tasks.models.valueobject.TaskDescription;
 import jp.cloudace.tech.clean.demo.tasks.models.valueobject.TaskId;
 import jp.cloudace.tech.clean.demo.tasks.models.valueobject.TaskName;
 
 public class Task {
+
     TaskId id;
     TaskName name;
     TaskDescription description;
 
-    public String validate() {
-        String errors = "";
-        String ls = System.lineSeparator();
+    Task() {
+    }
+
+    public String[] validate() {
+        List<String> errors = new ArrayList<>();
         if (name == null) {
-            errors += "タスク名は必須であります。" + ls;
+            errors.add("タスク名は必須であります。");
         } else {
             String nameError = name.validate();
             if (nameError != null) {
-                errors += nameError + ls;
+                errors.add(nameError);
             }
         }
         if (description != null) {
             String descError = description.validate();
             if (descError != null) {
-                errors += descError + ls;
+                errors.add(descError);
             }
         }
-        if (errors.length() != 0) {
-            return errors;
+        if (errors.isEmpty()) {
+            return null;
         }
-        return null;
+        return errors.toArray(new String[0]);
     }
 
     public TaskId getId() {
@@ -58,6 +64,7 @@ public class Task {
     }
 
     public static class Factory {
+
         public static Task createModelForRegister(TaskName name, TaskDescription description) {
             Task task = new Task();
             task.name = name;
@@ -73,4 +80,5 @@ public class Task {
             return task;
         }
     }
+
 }

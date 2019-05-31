@@ -1,24 +1,26 @@
 package jp.cloudace.tech.clean.demo.tasks.usecases.impl;
 
-import jp.cloudace.tech.clean.demo.tasks.models.Task;
-import jp.cloudace.tech.clean.demo.tasks.usecases.boundaries.presenters.TaskListPresenter;
-import jp.cloudace.tech.clean.demo.tasks.usecases.boundaries.repositories.TaskRepository;
-import jp.cloudace.tech.clean.demo.tasks.usecases.ports.ListTasksUseCaseInputPort;
-
 import java.util.List;
 
-public class ListTasksUseCase<T> implements ListTasksUseCaseInputPort<T> {
-    private TaskRepository repository;
-    private TaskListPresenter<T> presenter;
+import jp.cloudace.tech.clean.demo.tasks.models.Task;
+import jp.cloudace.tech.clean.demo.tasks.usecases.boundaries.repositories.TaskRepository;
+import jp.cloudace.tech.clean.demo.tasks.usecases.ports.ListTasksUseCaseInputPort;
+import jp.cloudace.tech.clean.demo.tasks.usecases.ports.ListTasksUseCaseOutputPort;
 
-    public ListTasksUseCase(TaskRepository repository, TaskListPresenter<T> presenter) {
+public class ListTasksUseCase implements ListTasksUseCaseInputPort {
+
+    private final TaskRepository repository;
+    private final ListTasksUseCaseOutputPort outputPort;
+
+    public ListTasksUseCase(TaskRepository repository, ListTasksUseCaseOutputPort outputPort) {
         this.repository = repository;
-        this.presenter = presenter;
+        this.outputPort = outputPort;
     }
 
     @Override
-    public T execute() {
-        List<Task> list = repository.list();
-        return presenter.present(list);
+    public void execute() {
+        List<Task> tasks = repository.list();
+        outputPort.emitTasks(tasks);
     }
+
 }

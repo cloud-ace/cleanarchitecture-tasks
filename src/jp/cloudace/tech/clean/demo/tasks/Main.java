@@ -1,9 +1,11 @@
 package jp.cloudace.tech.clean.demo.tasks;
 
+import java.util.Scanner;
+
 import jp.cloudace.tech.clean.demo.tasks.controllers.CommandLineController;
-import jp.cloudace.tech.clean.demo.tasks.presenters.TaskListStringPresenter;
+import jp.cloudace.tech.clean.demo.tasks.presenters.PrintPresenter;
+import jp.cloudace.tech.clean.demo.tasks.presenters.views.PrintView;
 import jp.cloudace.tech.clean.demo.tasks.repositories.memory.TaskMemoryRepository;
-import jp.cloudace.tech.clean.demo.tasks.usecases.boundaries.presenters.TaskListPresenter;
 import jp.cloudace.tech.clean.demo.tasks.usecases.boundaries.repositories.CompletedTaskRepository;
 import jp.cloudace.tech.clean.demo.tasks.usecases.boundaries.repositories.TaskRepository;
 import jp.cloudace.tech.clean.demo.tasks.usecases.impl.CompleteTaskUseCase;
@@ -14,42 +16,93 @@ import jp.cloudace.tech.clean.demo.tasks.usecases.ports.CompleteTaskUseCaseInput
 import jp.cloudace.tech.clean.demo.tasks.usecases.ports.CreateTaskUseCaseInputPort;
 import jp.cloudace.tech.clean.demo.tasks.usecases.ports.ListCompletedTaskUseCaseInputPort;
 import jp.cloudace.tech.clean.demo.tasks.usecases.ports.ListTasksUseCaseInputPort;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import jp.cloudace.tech.clean.demo.tasks.views.CommandLineView;
 
 public class Main {
 
     public static void main(String[] args) {
+
         //TODO you can replace this code using DI container like Guice.
         TaskRepository taskRepository = new TaskMemoryRepository();
         CompletedTaskRepository completedTaskRepository = new TaskMemoryRepository();
-        TaskListPresenter<String> presenter = new TaskListStringPresenter();
-        ListTasksUseCaseInputPort<String> listTasksUseCaseInputPort = new ListTasksUseCase<>(taskRepository, presenter);
-        CreateTaskUseCaseInputPort createTaskUseCaseInputPort = new CreateTaskUseCase(taskRepository);
-        CompleteTaskUseCaseInputPort completeTaskUseCaseInputPort = new CompleteTaskUseCase(taskRepository, completedTaskRepository);
-        ListCompletedTaskUseCaseInputPort<String> listCompletedTaskUseCaseInputPort = new ListCompletedTaskUseCase<>(completedTaskRepository, presenter);
+        PrintView printView = new CommandLineView();
+        PrintPresenter presenter = new PrintPresenter(printView);
+        ListTasksUseCaseInputPort listTasksUseCaseInputPort = new ListTasksUseCase(taskRepository, presenter);
+        CreateTaskUseCaseInputPort createTaskUseCaseInputPort = new CreateTaskUseCase(presenter, taskRepository);
+        CompleteTaskUseCaseInputPort completeTaskUseCaseInputPort = new CompleteTaskUseCase(presenter, taskRepository, completedTaskRepository);
+        ListCompletedTaskUseCaseInputPort listCompletedTaskUseCaseInputPort = new ListCompletedTaskUseCase(presenter, completedTaskRepository);
 
-        CommandLineController controller = new CommandLineController(listTasksUseCaseInputPort, createTaskUseCaseInputPort,
+        CommandLineController controller = new CommandLineController(
+                listTasksUseCaseInputPort, createTaskUseCaseInputPort,
                 completeTaskUseCaseInputPort, listCompletedTaskUseCaseInputPort);
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        try {
-            System.out.print("input > ");
-            String str = br.readLine();
-            while (!"exit".equals(str)) {
-                String result = controller.invokeUseCase(str.split(" "));
-                System.out.println(result);
+        Scanner scanner = new Scanner(System.in);
+        String input;
 
-                System.out.print("input > ");
-                str = br.readLine();
+        while (true) {
+            System.out.print("input > ");
+            input = scanner.nextLine();
+
+            if ("exit".equals(input)) {
+                System.out.println("Bye!");
+                break;
             }
-            System.out.println("Bye!");
-            System.exit(0);
-        } catch (IOException e) {
-            System.out.println("入力エラー:" + e.getMessage());
-            System.exit(-1);
+
+            String[] inputs = input.split(" ");
+
+            if (inputs.length < 1) {
+                System.out.println("1st argument is required.");
+                continue;
+            }
+
+            String resource = inputs[0];
+            switch (resource) {
+                case "help":
+                    System.out.println("sorry, this functions is not implemented.");
+                    continue;
+                case "tasks":
+                    if (inputs.length < 2) {
+                        System.out.println("action is required");
+                        break;
+                    }
+                    String action = inputs[1];
+                    switch (action) {
+                        case "list":
+                            if (inputs.length > 2) {
+                                String flag = inputs[2];
+                                switch (flag) {
+                                    case "-c":
+                                        controller.listCompleted();
+                                        continue;
+                                }
+                            }
+                            controller.listTasks();
+                            break;
+                        case "create":
+                            if (inputs.length < 4) {
+                                System.out.println("id is required as 3rd argument.");
+                                break;
+                            }
+                            controller.createTask(inputs[2], inputs[3]);
+                            break;
+                        case "complete":
+                            if (inputs.length < 3) {
+                                System.out.println("id is required as 3rd argument.");
+                                break;
+                            }
+                            controller.completeTask(inputs[2]);
+                            break;
+                        default:
+                            System.out.println("action is required.");
+                            break;
+                    }
+                    break;
+                default:
+                    System.out.println("nothing to do. :D");
+                    break;
+            }
         }
+
     }
+
 }

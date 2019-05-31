@@ -6,24 +6,39 @@ import jp.cloudace.tech.clean.demo.tasks.models.valueobject.TaskId;
 import jp.cloudace.tech.clean.demo.tasks.usecases.boundaries.repositories.CompletedTaskRepository;
 import jp.cloudace.tech.clean.demo.tasks.usecases.boundaries.repositories.TaskRepository;
 import jp.cloudace.tech.clean.demo.tasks.usecases.ports.CompleteTaskUseCaseInputPort;
+import jp.cloudace.tech.clean.demo.tasks.usecases.ports.CompleteTaskUseCaseOutputPort;
 
 public class CompleteTaskUseCase implements CompleteTaskUseCaseInputPort {
-    private TaskRepository taskRepository;
-    private CompletedTaskRepository completedTaskRepository;
 
-    public CompleteTaskUseCase(TaskRepository taskRepository, CompletedTaskRepository completedTaskRepository) {
+    private final CompleteTaskUseCaseOutputPort outputPort;
+    private final TaskRepository taskRepository;
+    private final CompletedTaskRepository completedTaskRepository;
+
+    public CompleteTaskUseCase(
+            CompleteTaskUseCaseOutputPort outputPort,
+            TaskRepository taskRepository,
+            CompletedTaskRepository completedTaskRepository
+    ) {
+        this.outputPort = outputPort;
         this.taskRepository = taskRepository;
         this.completedTaskRepository = completedTaskRepository;
     }
 
     @Override
-    public void execute(TaskId id) {
-        Task task = taskRepository.get(id);
+    public void execute(String id) {
+
+        TaskId taskId = new TaskId(id);
+        Task task = taskRepository.get(taskId);
+
         if (task == null) {
-            throw new IllegalArgumentException("taskId:" + id.getValue() + " is not found.");
+            outputPort.showErrors(new String[]{"taskId:" + id + " is not found."});
+            return;
         }
+
         CompletedTask completedTask = task.complete();
-        taskRepository.delete(id);
+        taskRepository.delete(taskId);
         completedTaskRepository.create(completedTask);
+        outputPort.emitCompletedTaskId(completedTask.getId().getValue());
+
     }
 }
