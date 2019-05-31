@@ -1,8 +1,8 @@
 package jp.cloudace.tech.clean.demo.tasks.models.valueobject;
 
-public class TaskName {
+public final class TaskName {
 
-    private String value;
+    private final String value;
 
     public TaskName(String value) {
         this.value = value;
@@ -24,7 +24,7 @@ public class TaskName {
         if (value.equals("")) {
             return "空のタスク名はだめです。";
         }
-        if (5 < value.length()) {
+        if (value.length() > 5) {
             return "タスク名は5文字以下である必要があるです。";
         }
         return null;

@@ -1,8 +1,10 @@
 package jp.cloudace.tech.clean.demo.tasks.models.valueobject;
 
-public class TaskDescription {
+import java.util.Objects;
 
-    private String value;
+public final class TaskDescription {
+
+    private final String value;
 
     public TaskDescription(String value) {
         this.value = value;
@@ -10,6 +12,14 @@ public class TaskDescription {
 
     public String getValue() {
         return value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TaskDescription that = (TaskDescription) o;
+        return Objects.equals(value, that.value);
     }
 
     /**
@@ -21,10 +31,15 @@ public class TaskDescription {
         if (value == null) {
             return "タスクの説明がnullはだめです。";
         }
-        if (10 < value.length()) {
+        if (value.length() > 10) {
             return "タスクの説明は10文字以下である必要があるです。";
         }
         return null;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
     }
 
     @Override

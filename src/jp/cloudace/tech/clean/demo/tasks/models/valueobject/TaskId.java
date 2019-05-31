@@ -2,8 +2,9 @@ package jp.cloudace.tech.clean.demo.tasks.models.valueobject;
 
 import java.util.Objects;
 
-public class TaskId {
-    private String value;
+public final class TaskId {
+
+    private final String value;
 
     public TaskId(String value) {
         this.value = value;

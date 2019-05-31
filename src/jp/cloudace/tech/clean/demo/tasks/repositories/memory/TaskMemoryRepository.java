@@ -1,14 +1,19 @@
 package jp.cloudace.tech.clean.demo.tasks.repositories.memory;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import jp.cloudace.tech.clean.demo.tasks.models.CompletedTask;
 import jp.cloudace.tech.clean.demo.tasks.models.Task;
 import jp.cloudace.tech.clean.demo.tasks.models.valueobject.TaskId;
 import jp.cloudace.tech.clean.demo.tasks.usecases.boundaries.repositories.CompletedTaskRepository;
 import jp.cloudace.tech.clean.demo.tasks.usecases.boundaries.repositories.TaskRepository;
 
-import java.util.*;
-
 public class TaskMemoryRepository implements TaskRepository, CompletedTaskRepository {
+
     private Map<TaskId, Task> tMap = new HashMap<>();
     private Map<TaskId, CompletedTask> ctMap = new HashMap<>();
 
@@ -34,15 +39,16 @@ public class TaskMemoryRepository implements TaskRepository, CompletedTaskReposi
 
     @Override
     public Task create(Task task) {
-        String id = UUID.randomUUID().toString();
-        TaskId taskId = new TaskId(id);
-        task = Task.Factory.of(taskId, task.getName(), task.getDescription());
-        tMap.put(taskId, task);
-        return task;
+        String idValue = UUID.randomUUID().toString();
+        TaskId id = new TaskId(idValue);
+        Task registered = Task.Factory.of(id, task.getName(), task.getDescription());
+        tMap.put(id, registered);
+        return registered;
     }
 
     @Override
     public void delete(TaskId id) {
         tMap.remove(id);
     }
+
 }
